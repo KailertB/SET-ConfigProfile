@@ -12,7 +12,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace SET_ConfigProfile
 {
-    public partial class Form1 : Form
+    public partial class Main : Form
     {
         #region Constructor
         //public List<SourcePathList> sourcePathList { get; set; }
@@ -62,12 +62,11 @@ namespace SET_ConfigProfile
         {
             public int RowIndex { get; set; }
             public bool isCheckCopy { get; set; }
+            public string Status { get; set; }
             public string DirectoryPath { get; set; }
             public string Filename { get; set; }
-            //public string FileFullPath { get; set; }
-            //public string FilePath { get; set; }
-            //public string FileExtension { get; set; }
-            //public string FileProfile { get; set; }
+            public string FilenameWithProfile { get; set; }
+            public string Profile { get; set; }
         }
 
         public class SelectedItem
@@ -94,7 +93,7 @@ namespace SET_ConfigProfile
         /// <summary>
         /// 
         /// </summary>
-        public Form1()
+        public Main()
         {
             InitializeComponent();
             ddlProfile.Enabled = false;
@@ -103,6 +102,7 @@ namespace SET_ConfigProfile
             CopyDataGridView.Refresh();
         }
 
+        #region Button
         #region Source
 
         private void btnBrowseSourceFolder_Click(object sender, EventArgs e)
@@ -148,6 +148,49 @@ namespace SET_ConfigProfile
 
         #endregion
 
+        private void btnCopy_Click(object sender, EventArgs e)
+        {
+            List<CopyList> CopyListData = new List<CopyList>();
+            foreach (DataGridViewRow dr in this.CopyDataGridView.Rows)
+            {
+                CopyList item = new CopyList();
+
+                item.RowIndex = dr.Index;
+
+                bool boolCheckCopy = false;
+                var isCheckCopy = drCellsConvertValue(dr, "isCheckCopy");
+                if (bool.TryParse(isCheckCopy, out boolCheckCopy))
+                {
+                    item.isCheckCopy = boolCheckCopy;
+                }
+
+                item.Status = drCellsConvertValue(dr, "Status");
+                item.DirectoryPath = drCellsConvertValue(dr, "DirectoryPath");
+                item.Filename = drCellsConvertValue(dr, "Filename");
+                item.Profile = drCellsConvertValue(dr, "Profile");
+
+                CopyListData.Add(item);
+
+
+            }
+
+
+            List<CopyList> cclist = CopyListData.Where(x => x.isCheckCopy == true).ToList();
+
+            var returnList = CopyFileTo(txtSourcePath.Text, txtConfigPath.Text, cclist);
+
+            foreach (var item in returnList)
+            {
+
+                var indexStatus = CopyDataGridView.Columns["Status"].Index;
+                var rowIndex = item.RowIndex;
+                CopyDataGridView.Rows[item.RowIndex].Cells[indexStatus].Value = item.Status;
+
+                CopyDataGridView.Update();
+            }
+        }
+        #endregion
+
         #region GridView
         public void RefreshGridview()
         {
@@ -183,27 +226,26 @@ namespace SET_ConfigProfile
                 var indexDirectoryPath = CopyDataGridView.Columns["DirectoryPath"].Index;
                 var indexFileName = CopyDataGridView.Columns["FileName"].Index;
                 var indexProfile = CopyDataGridView.Columns["Profile"].Index;
+                //var indexFilenameWithProfile = CopyDataGridView.Columns["FilenameWithProfile"].Index;
 
                 foreach (var item in CopyFileList)
                 {
                     CopyDataGridView.Rows.Add();
                     CopyDataGridView.AllowUserToAddRows = false;
 
-         
                     CopyDataGridView.Rows[i].Cells[indexDirectoryPath].Value = item.DirectoryPath;
                     CopyDataGridView.Rows[i].Cells[indexFileName].Value = item.Filename;
 
                     DataGridViewComboBoxCell l_objGridDropbox = new DataGridViewComboBoxCell();
                     var profileList = GetProfileList(item.DirectoryPath, item.Filename);// Bind combobox with datasource.  
-                    l_objGridDropbox.DataSource = profileList; 
+                    l_objGridDropbox.DataSource = profileList;
                     l_objGridDropbox.DisplayMember = "Text";
                     l_objGridDropbox.ValueMember = "Value";
 
-    
-
                     bool isHasProfile = profileList.Where(x => x.Value == selProfile).ToList().Count > 0;
 
-                    if(isHasProfile){
+                    if (isHasProfile)
+                    {
                         CopyDataGridView.Rows[i].Cells[0].Value = true;
                         CopyDataGridView.Rows[i].Cells[indexStatus].Value = "Prompt";
                         l_objGridDropbox.Value = selProfile;
@@ -214,12 +256,13 @@ namespace SET_ConfigProfile
                         CopyDataGridView.Rows[i].Cells[indexStatus].Value = "Profile not Same";
                         if (profileList.Count > 0)
                         {
+
                             l_objGridDropbox.Value = profileList.Select(x => x.Value).FirstOrDefault();
                         }
                     }
 
                     CopyDataGridView[indexProfile, i] = l_objGridDropbox;
-             
+
                     i++;
                 }
             }
@@ -252,7 +295,6 @@ namespace SET_ConfigProfile
 
             return toReturn;
         }
-
         private string CheckFileConfigOrProfile(string filePath)
         {
             string toReturn = "";
@@ -281,7 +323,6 @@ namespace SET_ConfigProfile
 
             return toReturn;
         }
-
         private List<SourcePathList> GetSourcePathList(string folderPath)
         {
             var toReturn = new List<SourcePathList>();
@@ -388,8 +429,6 @@ namespace SET_ConfigProfile
 
             return toReturn;
         }
-
-
         private List<SelectedItem> GetProfileList(string folderPath, string filename)
         {
             var toReturn = new List<SelectedItem>();
@@ -411,7 +450,6 @@ namespace SET_ConfigProfile
 
             return toReturn;
         }
-
         private List<CopyList> GetCopyList()
         {
             var toReturn = new List<CopyList>();
@@ -432,7 +470,6 @@ namespace SET_ConfigProfile
 
             return toReturn;
         }
-
         private List<string> GetAllDirectory(string folderPath)
         {
             var toReturn = new List<string>();
@@ -463,76 +500,83 @@ namespace SET_ConfigProfile
 
             return toReturn;
         }
-        #endregion
-
-        private void CopyDataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
+        private string drCellsConvertValue(DataGridViewRow dr, string drColomnName)
         {
-            if (e.ColumnIndex > -1)
+            string toReturn = null;
+            try
             {
-                // Bind grid cell with combobox and than bind combobox with datasource.  
-                //DataGridViewComboBoxCell l_objGridDropbox = new DataGridViewComboBoxCell();
-                //DataGridViewRow row = CopyDataGridView.Rows[e.RowIndex];
+                toReturn = dr.Cells[drColomnName].Value == null ? null : dr.Cells[drColomnName].Value.ToString();
+            }
+            catch
+            {
+                return null;
+            }
+            return toReturn;
+        }
+        private List<CopyList> CopyFileTo(string sourcePath, string configPath, List<CopyList> list)
+        {
 
-                //var indexDirectoryPath = CopyDataGridView.Columns["DirectoryPath"].Index;
-                //var indexFileName = CopyDataGridView.Columns["FileName"].Index;
+            try
+            {
+                foreach (var item in list)
+                {
+                    item.Status = "Fail";
 
-                //if (CopyDataGridView.Columns[e.ColumnIndex].Name.Contains("Profile"))
-                //{
-                //    // On click of datagridview cell, attched combobox with this click cell of datagridview  
-                //    CopyDataGridView[e.ColumnIndex, e.RowIndex] = l_objGridDropbox;
+                    var trimChars = @"\";
+                    var directoryPath = item.DirectoryPath.TrimStart(trimChars.ToCharArray());
+                    var sourceFilePath = Path.Combine(sourcePath, directoryPath, item.Filename);
 
-                //    var directoryPath = row.Cells[indexDirectoryPath].Value.ToString();
-                //    var fileName = row.Cells[indexFileName].Value.ToString();
-                //    l_objGridDropbox.DataSource = GetProfileList(directoryPath, fileName); // Bind combobox with datasource.  
-                //    l_objGridDropbox.ValueMember = "Text";
-                //    l_objGridDropbox.DisplayMember = "Value";
+                    if (File.Exists(sourceFilePath))
+                    {
+                        string dtBackup = DateTime.Now.ToString("yyyyMMddHHmmss");
+                        var fileBackupName = string.Format("{0}.bak_{1}", item.Filename, dtBackup);
+                        var moveFilePath = Path.Combine(sourcePath, directoryPath, fileBackupName);
+                        File.Move(sourceFilePath, moveFilePath);
 
-                //}
+                    }
+
+                    var isConfig = configExtList.Where(x => x == item.Profile).ToList().Count > 0;
+                    var fileConfig = string.Empty;
+                    if (isConfig)
+                    {
+                        fileConfig = item.Filename;
+                    }
+                    else
+                    {
+                        fileConfig = string.Format("{0}{1}", item.Filename, item.Profile);
+                    }
+
+                    var configFilePath = Path.Combine(configPath, directoryPath, fileConfig);
+
+                    File.Copy(configFilePath, sourceFilePath, true);
+
+                    item.Status = "Success";
+                }
+
 
 
             }
+            catch (Exception ex)
+            {
+
+
+            }
+            MessageBox.Show("File Copy Success", "Copy Success");
+            return list;
         }
+        #endregion
 
-        //private void CopyDataGridView_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e)
-        //{
-        //    string selProfile = ddlProfile.SelectedValue.ToString();
-        //    var indexProfile = CopyDataGridView.Columns["Profile"].Index;
-
-        //    e.Row.Cells[indexProfile].Value = selProfile;
-        //}
-
-
-
-
-
-        private void CopyDataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void ddlProfile_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            try
+            {
+                BindCopyGrid();
+            }
+            catch (Exception)
+            {
+            }
+ 
         }
-
-        //if (e.RowIndex > 0)
-        //{
-        //    string selProfile = ddlProfile.SelectedValue.ToString();
-
-        //    DataGridViewComboBoxCell l_objGridDropbox = new DataGridViewComboBoxCell();
-        //    DataGridViewRow row = CopyDataGridView.Rows[e.RowIndex];
-
-        //    var indexDirectoryPath = CopyDataGridView.Columns["DirectoryPath"].Index;
-        //    var indexFileName = CopyDataGridView.Columns["FileName"].Index;
-        //    var indexProfile = CopyDataGridView.Columns["Profile"].Index;
-
-        //    CopyDataGridView[indexProfile, e.RowIndex] = l_objGridDropbox;
-
-        //    var directoryPath = row.Cells[indexDirectoryPath].Value.ToString();
-        //    var fileName = row.Cells[indexFileName].Value.ToString();
-        //    l_objGridDropbox.DataSource = GetProfileList(directoryPath, fileName); // Bind combobox with datasource.  
-        //    l_objGridDropbox.ValueMember = "Text";
-        //    l_objGridDropbox.DisplayMember = "Value";
-
-        //    l_objGridDropbox.Value = selProfile;
-
-        //}
-
 
     }
 }

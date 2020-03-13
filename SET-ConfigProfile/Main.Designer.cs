@@ -1,6 +1,6 @@
 ﻿namespace SET_ConfigProfile
 {
-    partial class Form1
+    partial class Main
     {
         /// <summary>
         /// Required designer variable.
@@ -37,11 +37,12 @@
             this.ddlProfile = new System.Windows.Forms.ComboBox();
             this.lblProfile = new System.Windows.Forms.Label();
             this.CopyDataGridView = new System.Windows.Forms.DataGridView();
+            this.btnCopy = new System.Windows.Forms.Button();
             this.isCheckCopy = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Profile = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.DirectoryPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.FileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Profile = new System.Windows.Forms.DataGridViewComboBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.CopyDataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -105,6 +106,7 @@
             this.ddlProfile.Name = "ddlProfile";
             this.ddlProfile.Size = new System.Drawing.Size(224, 21);
             this.ddlProfile.TabIndex = 7;
+            this.ddlProfile.SelectedIndexChanged += new System.EventHandler(this.ddlProfile_SelectedIndexChanged);
             // 
             // lblProfile
             // 
@@ -125,13 +127,23 @@
             this.CopyDataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.isCheckCopy,
             this.Status,
+            this.Profile,
             this.DirectoryPath,
-            this.FileName,
-            this.Profile});
+            this.FileName});
             this.CopyDataGridView.Location = new System.Drawing.Point(12, 91);
             this.CopyDataGridView.Name = "CopyDataGridView";
-            this.CopyDataGridView.Size = new System.Drawing.Size(573, 198);
+            this.CopyDataGridView.Size = new System.Drawing.Size(601, 368);
             this.CopyDataGridView.TabIndex = 9;
+            // 
+            // btnCopy
+            // 
+            this.btnCopy.Location = new System.Drawing.Point(402, 10);
+            this.btnCopy.Name = "btnCopy";
+            this.btnCopy.Size = new System.Drawing.Size(75, 49);
+            this.btnCopy.TabIndex = 10;
+            this.btnCopy.Text = "Copy";
+            this.btnCopy.UseVisualStyleBackColor = true;
+            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
             // 
             // isCheckCopy
             // 
@@ -145,11 +157,18 @@
             this.Status.Name = "Status";
             this.Status.ReadOnly = true;
             // 
+            // Profile
+            // 
+            this.Profile.HeaderText = "Profile";
+            this.Profile.Name = "Profile";
+            // 
             // DirectoryPath
             // 
+            this.DirectoryPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.DirectoryPath.HeaderText = "Directory";
             this.DirectoryPath.Name = "DirectoryPath";
             this.DirectoryPath.ReadOnly = true;
+            this.DirectoryPath.Width = 74;
             // 
             // FileName
             // 
@@ -157,16 +176,12 @@
             this.FileName.Name = "FileName";
             this.FileName.ReadOnly = true;
             // 
-            // Profile
-            // 
-            this.Profile.HeaderText = "Profile";
-            this.Profile.Name = "Profile";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(597, 301);
+            this.ClientSize = new System.Drawing.Size(627, 471);
+            this.Controls.Add(this.btnCopy);
             this.Controls.Add(this.CopyDataGridView);
             this.Controls.Add(this.lblProfile);
             this.Controls.Add(this.ddlProfile);
@@ -177,7 +192,7 @@
             this.Controls.Add(this.lblConfig);
             this.Controls.Add(this.lblSource);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Config Manager";
             ((System.ComponentModel.ISupportInitialize)(this.CopyDataGridView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -195,11 +210,12 @@
         private System.Windows.Forms.ComboBox ddlProfile;
         private System.Windows.Forms.Label lblProfile;
         private System.Windows.Forms.DataGridView CopyDataGridView;
+        private System.Windows.Forms.Button btnCopy;
         private System.Windows.Forms.DataGridViewCheckBoxColumn isCheckCopy;
         private System.Windows.Forms.DataGridViewTextBoxColumn Status;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Profile;
         private System.Windows.Forms.DataGridViewTextBoxColumn DirectoryPath;
         private System.Windows.Forms.DataGridViewTextBoxColumn FileName;
-        private System.Windows.Forms.DataGridViewComboBoxColumn Profile;
     }
 }
 
